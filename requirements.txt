@@ -4,7 +4,7 @@ dash_html_components
 dash_core_components
 numpy==1.21.5
 plotly==5.6.0
-werkzeug
+werkzeug=2.0.3
 Flask==2.1.0
 Flask-Compress
 gunicorn
