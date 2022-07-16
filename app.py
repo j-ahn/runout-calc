@@ -195,7 +195,7 @@ app.layout = html.Div([
         
     html.Div([html.Button('Update', id='update_button', n_clicks=0)], style=styledict),
     
-    dcc.Graph('dashboard',figure={"layout" : {"height":800}},config={'displayModeBar': True, 
+    dcc.Graph('dashboard',style={'height': '70vh'},config={'displayModeBar': True, 
                       'scrollZoom':False,
                       'displaylogo':False,
                       'toImageButtonOptions': {'format': 'svg','filename': 'runout_calculator'},
