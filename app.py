@@ -93,7 +93,6 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spx, spy, fsx
         for x,y in zip(i_x, i_y):
             if x != y:
                 print("Intersection indices don't match")
-                break
             else:
                 i.append(x)
             
