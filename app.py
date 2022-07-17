@@ -84,6 +84,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
                    b_x[0]-1.0*bund_width])
             
         b_y.extend([b_y[0]+bund_height, b_y[0]])
+        
         bt_x, bt_y = b_x[1], b_y[1]
 
     else:
@@ -177,9 +178,9 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         # Calculate catch capacity
         line_profile = split(line_combined,line_runout)[0]
         if bund_height > 0:
-            line_profile2 = LineString([(0,0), (b_x[2], b_y[2]), (bt_x, bt_y), (ix, iy)])
+            line_profile2 = LineString([(b_x[2], b_y[2]), (bt_x, bt_y), (ix, iy)])
         else:
-            line_profile2 = LineString([(0,0), (bt_x, bt_y), (ix, iy)])
+            line_profile2 = LineString([(bt_x, bt_y), (ix, iy)])
         catch_capacity = Polygon(linemerge([line_profile, line_profile2]))
         cc_x, cc_y = polygon_to_patch(catch_capacity)
         fig.add_trace(go.Scatter(x=cc_x, y=cc_y, name = "Catch capacity = {0:.1f} m³/m".format(catch_capacity.area), mode='lines', line=dict(color='#004890'), opacity=0.2, marker_size=0, fillcolor='#004890', fill='toself', hoverinfo='skip'))
