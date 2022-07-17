@@ -330,7 +330,7 @@ app.layout = dbc.Container(
         dbc.Row([
             dbc.Col(inputscard, md=2),
             
-            dbc.Col(runoutgraph)
+            dbc.Col(runoutgraph, md=10)
         ])
     ],
     fluid=True
