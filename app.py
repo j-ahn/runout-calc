@@ -22,6 +22,12 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.renderers.default='browser'
 
+# Colors
+bmao = '#f7923a'
+bmar = '#ee3b34'
+bmab = '#004890'
+bkgr = '#f8f5f0'
+
 # Text area delimiter
 def textarea_to_list(textarea_string):
     list0 = textarea_string.replace('\t',',').replace('\n',',').split(',')
@@ -61,7 +67,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     
     # Initiate plotly figure
     fig = go.Figure()
-    fig.update_layout(template='simple_white')
+    fig.update_layout(template='simple_white', paper_bgcolor=bkgr)
     
     # Calculated Parameters
     bund_width = 2*bund_height/math.tan(math.radians(37))
@@ -97,7 +103,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     
     # Plot bund if bund height is greater than 0
     if bund_height > 0:
-        fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund = {0:.1f} m".format(bund_height), mode='lines', line=dict(color='#f7923a'), opacity=0.2, marker_size=0, fillcolor='#f7923a', fill='toself', hoverinfo='skip'))
+        fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund = {0:.1f} m".format(bund_height), mode='lines', line=dict(color=bmao), opacity=0.2, marker_size=0, fillcolor=bmao, fill='toself', hoverinfo='skip'))
     
     # FAILURE VOLUME calculations
     try:
@@ -148,7 +154,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         # Add failed volume to plotly figure
         failure_volume = Polygon(linemerge([fs_ls, sp_lsf]))
         fv_x_p, fv_y_p = polygon_to_patch(failure_volume)
-        fig.add_trace(go.Scatter(x=fv_x_p, y=fv_y_p, name = "Failure volume = {0:.1f} m³/m".format(failure_volume.area*swell_factor), mode='lines', line=dict(color='#ee3b34'), opacity=0.2, marker_size=0, fillcolor='#ee3b34', fill='toself', hoverinfo='skip'))
+        fig.add_trace(go.Scatter(x=fv_x_p, y=fv_y_p, name = "Failure volume = {0:.1f} m³/m".format(failure_volume.area*swell_factor), mode='lines', line=dict(color=bmar), opacity=0.2, marker_size=0, fillcolor=bmar, fill='toself', hoverinfo='skip'))
     
     except:
         print('Intersection error')
@@ -182,7 +188,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
             line_profile2 = LineString([(bt_x, bt_y), (ix, iy)])
         catch_capacity = Polygon(linemerge([line_profile, line_profile2]))
         cc_x, cc_y = polygon_to_patch(catch_capacity)
-        fig.add_trace(go.Scatter(x=cc_x, y=cc_y, name = "Catch capacity = {0:.1f} m³/m".format(catch_capacity.area), mode='lines', line=dict(color='#004890'), opacity=0.2, marker_size=0, fillcolor='#004890', fill='toself', hoverinfo='skip'))
+        fig.add_trace(go.Scatter(x=cc_x, y=cc_y, name = "Catch capacity = {0:.1f} m³/m".format(catch_capacity.area), mode='lines', line=dict(color=bmab), opacity=0.2, marker_size=0, fillcolor=bmab, fill='toself', hoverinfo='skip'))
         
     except:
         print('Catch capacity error')
@@ -196,7 +202,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     return fig
 
 # Initiate the app
-external_stylesheets = [dbc.themes.BOOTSTRAP, "assets/segmentation-style.css"]
+external_stylesheets = [dbc.themes.SANDSTONE]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.title = 'Runout Calculator'
@@ -205,6 +211,7 @@ app.title = 'Runout Calculator'
 styledict = {'display':'inline-block','vertical-align':'left', 'margin-top':'10px','margin-left':'20px','font-size':10,'font-family':'Verdana','textAlign':'center'}
 
 htmlcent = {'text-align':'center'}
+
 # Dropdown and input fields, saved as variables
 standoff = dcc.Input(id='standoff-state', type='number', value=18, min=5, max=50, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
@@ -259,11 +266,14 @@ header = dbc.Navbar(
                         [
                             html.Div(
                                 [
-                                    html.H3("Slope Runout Calculator"),
+                                    html.H3([
+                                        html.Span("Slope ", style={'color':bmao}),
+                                        html.Span("Runout ", style={'color':bmar}),
+                                        html.Span("Calculator ", style={'color':bmab})
+                                        ]),
                                     html.P("Jiwoo Ahn"),
                                 ],
-                                id="app-title",
-                                style={'color':'black'}
+                                id="app-title"
                             )
                         ],
                         md=True,
@@ -276,43 +286,42 @@ header = dbc.Navbar(
         fluid=True,
     ),
     dark=False,
-    color="#f7923a",
     sticky="top",
 )
 
-inputscard = dbc.Card(id='card_inputs',
-                      children=[
-                          dbc.CardHeader("Inputs"),
-                          html.Div([
-                              html.Div(html.H6("Geometry"), style=htmlcent),
+inputscard = dbc.Card(color='light',children=[
+                          dbc.CardHeader("Inputs", style={'font-weight':'bold'}),
+                          dbc.CardBody([html.Div([
+                              
+                              html.Div(html.H6("Geometry", style={'font-style':'italic', 'text-align':'center'})),
                                   dbc.Row([
                                       dbc.Col(html.Div([html.P("Slope (x,y)"),spxy]), style=htmlcent),
                                       dbc.Col(html.Div([html.P("Failure (x,y)"),fsxy], style=htmlcent))
+                                      ])
                                   ]),
-                          ]),
                           
-                          html.Hr(),
+                              html.Hr(),
                           
-                          html.Div([
-                              html.Div(html.H6("Parameters"), style=htmlcent),
-                              html.Div([html.Label(["Standoff (m):",standoff])], style=htmlcent),
-                              html.Div([html.Label(["Swell factor:",swellfactor])], style=htmlcent),
-                              html.Div([html.Label(["Bund height (m):",bundheight])], style=htmlcent),
-                              html.Div([html.Label(["Runout Angle (°):",runoutangle])], style=htmlcent),
-                              html.Div([html.Label(["Slope direction:"])], style=htmlcent),
-                              html.Div([direction], style=htmlcent),
-                              html.Div([html.Label([project])], style=htmlcent),
-                              html.Div([dbc.Button('Update Graph', id='update_button', n_clicks=0, color="primary", style={"margin": "5px"})], style=htmlcent)
+                              html.Div([
+                                  html.Div(html.H6("Parameters", style={'font-style':'italic', 'text-align':'center'})),
+                                  html.Div([html.Label(["Standoff (m):",standoff])], style=htmlcent),
+                                  html.Div([html.Label(["Swell factor:",swellfactor])], style=htmlcent),
+                                  html.Div([html.Label(["Bund height (m):",bundheight])], style=htmlcent),
+                                  html.Div([html.Label(["Runout Angle (°):",runoutangle])], style=htmlcent),
+                                  html.Div([html.Label(["Slope direction:"])], style=htmlcent),
+                                  html.Div([direction], style=htmlcent),
+                                  html.Div([html.Label([project])], style=htmlcent),
+                                  html.Div([dbc.Button('Update Graph', id='update_button', n_clicks=0, color="primary", style={"margin": "5px"})], style=htmlcent)
+                                  ])
                               ])
                           ])
                   
-runoutgraph = dbc.Card(id='card_graph', 
-                       children = [dbc.CardHeader("Output"),
-                                   dcc.Graph('dashboard',style={'height': '70vh'},
-                                             config={'displayModeBar': True, 
-                                                     'displaylogo':False,
-                                                     'toImageButtonOptions': {'format': 'svg','filename': 'runout_calculator'},
-                                                     'modeBarButtonsToRemove':['hoverClosestPie']})])
+runoutgraph = dbc.Card(color='light',children=[dbc.CardHeader("Output", style={'font-weight':'bold'}),
+                        dcc.Graph('dashboard',style={'height': '72vh'},
+                                  config={'displayModeBar': True, 
+                                          'displaylogo':False,
+                                          'toImageButtonOptions': {'format': 'svg','filename': 'runout_calculator'},
+                                          'modeBarButtonsToRemove':['hoverClosestPie']})])
 
 markdowncard = html.Div(dcc.Markdown("Enter slope and failure co-ordinates from bottom to top (1 decimal place) as tab delimited strings (recommend copy and pasting out of excel). Start and finish points of failure surface must co-incide with points on the slope profile (app will snap to nearest node)."), style = {'font-size':12,'font-family':'Verdana','textAlign':'center'})
 
@@ -322,15 +331,15 @@ app.layout = dbc.Container(
         
         html.Hr(),
         
-        markdowncard,
-        
-        html.Hr(),
-        
         dbc.Row([
             dbc.Col(inputscard, md=2),
             
             dbc.Col(runoutgraph, md=10)
-        ])
+        ]),
+        
+        html.Hr(),
+        
+        markdowncard
     ],
     fluid=True
 )
