@@ -133,12 +133,12 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         bool2 = (ix2 == sp_x[-1] and iy2 == sp_y[-1])
         if bool1 and bool2: 
             sp_lsf = sp_ls
-            linestrings = [sp_ls, fs_ls]
+            linestrings = [fs_ls]
         elif bool1:
             sp_lsf, sp_lsc = split(sp_ls, i2)
             linestrings = [fs_ls, sp_lsc]
         elif bool2:
-            sp_lsc, sp_lsc = split(sp_ls, i1)
+            sp_lsc, sp_lsf = split(sp_ls, i1)
             linestrings = [sp_lsc, fs_ls]
         else:
             sp_ls1, sp_ls2 = split(sp_ls, i1)
@@ -152,7 +152,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
             line_combined = LineString(merge(sp_x, sp_y))
             
         # Add failed volume to plotly figure
-        failure_volume = Polygon(linemerge([fs_ls, sp_lsf]))
+        failure_volume = Polygon(linemerge([sp_lsf, fs_ls]))
         fv_x_p, fv_y_p = polygon_to_patch(failure_volume)
         fig.add_trace(go.Scatter(x=fv_x_p, y=fv_y_p, name = "Failure volume = {0:.1f} m³/m".format(failure_volume.area*swell_factor), mode='lines', line=dict(color=bmar), opacity=0.2, marker_size=0, fillcolor=bmar, fill='toself', hoverinfo='skip'))
     
