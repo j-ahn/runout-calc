@@ -61,49 +61,56 @@ def polygon_to_patch(polygon):
 # Main function
 def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, direction, project):
     
-    # Round all co-ordinates to 1 decimal place for simplification
-    sp_x, sp_y = textarea_to_list(spxy)
-    fs_x, fs_y = textarea_to_list(fsxy)
-    
     # Initiate plotly figure
     fig = go.Figure()
     fig.update_layout(template='simple_white', paper_bgcolor=bkgr)
     
-    # Calculated Parameters
-    bund_width = 2*bund_height/math.tan(math.radians(37))
-    
-    # bund co-ordinates
-    if direction == 'left':
-        b_x = [-standoff+sp_x[0]]
-    else:
-        b_x = [standoff+sp_x[0]]
-    b_y = [sp_y[0]]
-    
-    # Start of run-out
-    if bund_height > 0:
-        if direction == 'left':
-            b_x.extend([b_x[0]+0.5*bund_width,
-                   b_x[0]+1.0*bund_width])
-        else:
-            b_x.extend([b_x[0]-0.5*bund_width,
-                   b_x[0]-1.0*bund_width])
-            
-        b_y.extend([b_y[0]+bund_height, b_y[0]])
+    # Round all co-ordinates to 1 decimal place for simplification
+    try:
+        sp_x, sp_y = textarea_to_list(spxy)
+        # Plot Slope profile
+        fig.add_trace(go.Scatter(x=sp_x, y=sp_y, name = 'Slope', mode='lines', line=dict(color='black'), opacity=1.0, marker_size=0))
         
-        bt_x, bt_y = b_x[1], b_y[1]
+        # Calculated Parameters
+        bund_width = 2*bund_height/math.tan(math.radians(37))
+        
+        # bund co-ordinates
+        if direction == 'left':
+            b_x = [-standoff+sp_x[0]]
+        else:
+            b_x = [standoff+sp_x[0]]
+        b_y = [sp_y[0]]
+        
+        # Start of run-out
+        if bund_height > 0:
+            if direction == 'left':
+                b_x.extend([b_x[0]+0.5*bund_width,
+                       b_x[0]+1.0*bund_width])
+            else:
+                b_x.extend([b_x[0]-0.5*bund_width,
+                       b_x[0]-1.0*bund_width])
+                
+            b_y.extend([b_y[0]+bund_height, b_y[0]])
+            
+            bt_x, bt_y = b_x[1], b_y[1]
+    
+        else:
+            bt_x, bt_y = b_x[0], b_y[0]
+        
+        # Plot bund if bund height is greater than 0
+        if bund_height > 0:
+            fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund = {0:.1f} m".format(bund_height), mode='lines', line=dict(color=bmao), opacity=0.2, marker_size=0, fillcolor=bmao, fill='toself', hoverinfo='skip'))
+        
+    except:
+        print('No slope profile entered')
+        
+    try:
+        fs_x, fs_y = textarea_to_list(fsxy)
+        # Plot Failure surface
+        fig.add_trace(go.Scatter(x=fs_x, y=fs_y, name = 'Failure', mode='lines', line=dict(color='red'), opacity=1.0, marker_size=0))
+    except:
+        print('No failure surface entered')
 
-    else:
-        bt_x, bt_y = b_x[0], b_y[0]
-    
-    # Plot Slope profile
-    fig.add_trace(go.Scatter(x=sp_x, y=sp_y, name = 'Slope', mode='lines', line=dict(color='black'), opacity=1.0, marker_size=0))
-    
-    # Plot Failure surface
-    fig.add_trace(go.Scatter(x=fs_x, y=fs_y, name = 'Failure', mode='lines', line=dict(color='red'), opacity=1.0, marker_size=0))
-    
-    # Plot bund if bund height is greater than 0
-    if bund_height > 0:
-        fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund = {0:.1f} m".format(bund_height), mode='lines', line=dict(color=bmao), opacity=0.2, marker_size=0, fillcolor=bmao, fill='toself', hoverinfo='skip'))
     
     # FAILURE VOLUME calculations
     try:
