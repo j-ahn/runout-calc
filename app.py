@@ -97,10 +97,6 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         else:
             bt_x, bt_y = b_x[0], b_y[0]
         
-        # Plot bund if bund height is greater than 0
-        if bund_height > 0:
-            fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund = {0:.1f} m".format(bund_height), mode='lines', line=dict(color=bmao), opacity=0.2, marker_size=0, fillcolor=bmao, fill='toself', hoverinfo='skip'))
-        
     except:
         print('No slope profile entered')
         
@@ -111,6 +107,13 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     except:
         print('No failure surface entered')
 
+    # Plot bund if bund height is greater than 0
+    if bund_height > 0:
+        fig.add_trace(go.Scatter(x=b_x, y=b_y, name = "Bund", mode='lines', line=dict(color=bmao), opacity=0.2, marker_size=0, fillcolor=bmao, fill='toself', hoverinfo='skip'))
+        titletext = "{0:.1f}m Bund at {1:.0f}m Standoff".format(bund_height, standoff)
+    else:
+        titletext = "Unbunded {0:.0f}m Standoff".format(standoff)
+            
     
     # FAILURE VOLUME calculations
     try:
@@ -206,6 +209,15 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
 
     fig.update_xaxes(scaleanchor = "y", scaleratio = 1)
     fig.update_layout(font={'size':16})
+    
+    fig.update_layout(
+    title=dict(text=titletext,x=0.5,y=0.95,
+               font=dict(family="Arial",size=20,color='#000000')
+               )
+    )
+    
+    fig.update_layout(margin=dict(l=20, r=20, t=60, b=20))
+    
     return fig
 
 # Initiate the app
