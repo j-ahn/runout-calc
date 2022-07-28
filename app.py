@@ -205,7 +205,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     # fig.update_xaxes(range=[min(b_x), max(sp_x)])
 
     fig.update_xaxes(scaleanchor = "y", scaleratio = 1)
-
+    fig.update_layout(font={'size':16})
     return fig
 
 # Initiate the app
@@ -339,9 +339,9 @@ app.layout = dbc.Container(
         html.Hr(),
         
         dbc.Row([
-            dbc.Col(inputscard, md=2),
+            dbc.Col(inputscard, md=3),
             
-            dbc.Col(runoutgraph, md=10)
+            dbc.Col(runoutgraph, md=9)
         ]),
         
         html.Hr(),
