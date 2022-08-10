@@ -67,7 +67,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     
     # Round all co-ordinates to 1 decimal place for simplification
     try:
-        if manual == 'yes':
+        if manual == 'manual':
             sp_x, sp_y = textarea_to_list(spxy)
         else:
             adj = slopeheight/math.tan(math.radians(slopeangle))
@@ -91,20 +91,22 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         bund_width = 2*bund_height/math.tan(math.radians(37))
         
         # bund co-ordinates
-        if direction == 'left':
-            b_x = [-standoff+sp_x[0]]
-        else:
+        if direction == 'right' and manual == 'manual':
             b_x = [standoff+sp_x[0]]
+        else:
+            b_x = [-standoff+sp_x[0]]
+            
         b_y = [sp_y[0]]
         
         # Start of run-out
         if bund_height > 0:
-            if direction == 'left':
-                b_x.extend([b_x[0]+0.5*bund_width,
-                       b_x[0]+1.0*bund_width])
-            else:
+            if direction == 'right' and manual == 'manual':
                 b_x.extend([b_x[0]-0.5*bund_width,
                        b_x[0]-1.0*bund_width])
+            else:
+                b_x.extend([b_x[0]+0.5*bund_width,
+                       b_x[0]+1.0*bund_width])
+                
                 
             b_y.extend([b_y[0]+bund_height, b_y[0]])
             
@@ -117,7 +119,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
         print('No slope profile entered')
         
     try:
-        if manual == 'yes':
+        if manual == 'manual':
             fs_x, fs_y = textarea_to_list(fsxy)
         else:
             if bkp == 'yes' and bkp_x < crest_x:
@@ -200,7 +202,7 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
     try:
         #  Find intersection point between run-out line and combined surface
         runout_length = 1000
-        if direction == 'right': runout_angle = 180-runout_angle
+        if direction == 'right' and manual=='manual': runout_angle = 180-runout_angle
         ro_x = [bt_x, bt_x+runout_length*math.cos(math.radians(runout_angle))]
         ro_y = [bt_y, bt_y+runout_length*math.sin(math.radians(runout_angle))]
         line_runout = LineString(merge(ro_x, ro_y))
@@ -293,13 +295,13 @@ fsxy = dcc.Textarea(
         style={'width': '90%', 'height': 104})
 
 # Slope Generator 
-manual = dbc.Checklist(
-    id="manual-state",
-    options=[{"label": "Use manual slope", "value": "yes"}],
-    value=["yes"],
-    switch=True,
-    inline=True
-)
+manuals = ['manual', 'parametrised']
+manual = dbc.RadioItems(
+                id="manual-state",
+                options=[{"label": x, "value": x} for x in manuals],
+                value="manual",
+                inline=True
+            )
 
 slopeheight = dcc.Input(id='slopeheight-state', type='number', value=36, min=1, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
@@ -372,7 +374,7 @@ inputscard = dbc.Card(color='light',children=[
                                       dbc.Col([html.Div([html.Label(["Standoff (m):",standoff])], style=htmlright),
                                                html.Div([html.Label(["Bund height (m):",bundheight])], style=htmlright),
                                                html.Div([html.Label(["Swell factor:",swellfactor])], style=htmlright),
-                                               html.Div([html.Label(["Runout Angle (°):",runoutangle])], style=htmlright)
+                                               html.Div([html.Label(["Runout angle (°):",runoutangle])], style=htmlright)
                                            ]),
                                       dbc.Col([html.Div([html.Label([project])], style=htmlcent),
                                                html.Div([html.Label([manual])], style=htmlcent),
@@ -393,16 +395,16 @@ inputscard = dbc.Card(color='light',children=[
                                                                 dbc.Col([html.H6("Failure (x,y)", style=htmlcent),fsxy])
                                                                 ])
                                                             ])),
-                                          dbc.Col([html.Div([html.H5("Automatic")], style=htmlcent),
-                                                  html.Div([html.Label(["Slope Height (m):",slopeheight])], style=htmlright),
-                                                  html.Div([html.Label(["Slope Dip (°):",slopeangle])], style=htmlright),
-                                                  html.Div([html.Label(["Crest Width (m):",crestwidth])], style=htmlright),
+                                          dbc.Col([html.Div([html.H5("Parametrised")], style=htmlcent),
+                                                  html.Div([html.Label(["Slope height (m):",slopeheight])], style=htmlright),
+                                                  html.Div([html.Label(["Slope angle (°):",slopeangle])], style=htmlright),
+                                                  html.Div([html.Label(["Crest width (m):",crestwidth])], style=htmlright),
                                                   html.Hr(),
-                                                  html.Div([html.Label(["Daylight Height (m):",failureheight])], style=htmlright),
-                                                  html.Div([html.Label(["Basal Dip (°):",failureangle])], style=htmlright),
+                                                  html.Div([html.Label(["Daylighting height (m):",failureheight])], style=htmlright),
+                                                  html.Div([html.Label(["Basal structure angle (°):",failureangle])], style=htmlright),
                                                   html.Hr(),
                                                   html.Div([html.Label([backscarp])], style=htmlcent),
-                                                  html.Div([html.Label(["Backscarp Distance (m):",backscarpdist])], style=htmlright)
+                                                  html.Div([html.Label(["Backscarp distance (m):",backscarpdist])], style=htmlright)
                                                   ])
                                       ])
                                   ])
@@ -464,13 +466,10 @@ def update_graph(n_clicks, standoff, swellfactor, bundheight, runoutangle, spxy,
         if project: prj = 'yes'
         else: prj= 'no'
         
-        if manual: mnl = 'yes'
-        else: mnl = 'no'
-        
         if backscarp: bkp = 'yes'
         else: bkp = 'no'
 
-        fig = plot_runout(standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, prj, mnl, slopeheight, slopeangle, crestwidth, failureheight, failureangle, bkp, backscarpdist)
+        fig = plot_runout(standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, prj, manual, slopeheight, slopeangle, crestwidth, failureheight, failureangle, bkp, backscarpdist)
         
     return fig
 
