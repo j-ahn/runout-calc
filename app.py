@@ -307,7 +307,7 @@ slopeangle = dcc.Input(id='slopeangle-state', type='number', value=65, min=1, ma
 
 crestwidth = dcc.Input(id='crestwidth-state', type='number', value=10, min=1, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
-failureheight = dcc.Input(id='failureheight-state', type='number', value=12, min=1, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
+failureheight = dcc.Input(id='failureheight-state', type='number', value=12, min=0, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
 failureangle = dcc.Input(id='failureangle-state', type='number', value=35, min=1, max=90, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
