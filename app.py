@@ -295,7 +295,7 @@ fsxy = dcc.Textarea(
         style={'width': '90%', 'height': 104})
 
 # Slope Generator 
-manuals = ['manual', 'parametrised']
+manuals = ['manual', 'parameterised']
 manual = dbc.RadioItems(
                 id="manual-state",
                 options=[{"label": x, "value": x} for x in manuals],
@@ -395,7 +395,7 @@ inputscard = dbc.Card(color='light',children=[
                                                                 dbc.Col([html.H6("Failure (x,y)", style=htmlcent),fsxy])
                                                                 ])
                                                             ])),
-                                          dbc.Col([html.Div([html.H5("Parametrised")], style=htmlcent),
+                                          dbc.Col([html.Div([html.H5("Parameterised")], style=htmlcent),
                                                   html.Div([html.Label(["Slope height (m):",slopeheight])], style=htmlright),
                                                   html.Div([html.Label(["Slope angle (°):",slopeangle])], style=htmlright),
                                                   html.Div([html.Label(["Crest width (m):",crestwidth])], style=htmlright),
