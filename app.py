@@ -14,6 +14,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output , State
 import dash_bootstrap_components as dbc
+import dash_auth
 
 from shapely.ops import split, linemerge
 from shapely.geometry import LineString, Polygon, Point
@@ -257,6 +258,14 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
 # Initiate the app
 external_stylesheets = [dbc.themes.SANDSTONE]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'BMA': '25'
+}
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
+
 server = app.server
 app.title = 'Runout Calculator'
 
@@ -340,7 +349,7 @@ header = dbc.Navbar(
                     dbc.Col(
                         html.Img(
                             id="logo",
-                            src="https://raw.githubusercontent.com/j-ahn/misc/main/favicon.png",
+                            src="https://raw.githubusercontent.com/j-ahn/misc/main/logo.png",
                             height="65px",
                         ),
                         md="auto",
@@ -354,7 +363,7 @@ header = dbc.Navbar(
                                         html.Span("Runout ", style={'color':bmar}),
                                         html.Span("Calculator ", style={'color':bmab})
                                         ]),
-                                    html.P("Jiwoo Ahn"),
+                                    html.H5("BMA Geotechnical Services"),
                                 ],
                                 id="app-title"
                             )
@@ -420,13 +429,19 @@ inputscard = dbc.Card(color='light',children=[
                       ])
                   
 runoutgraph = dbc.Card(color='light',children=[dbc.CardHeader("Output", style={'font-weight':'bold'}),
-                        dcc.Graph('dashboard',style={'height': '72vh'},
+                        dcc.Graph('dashboard',style={'height': '65vh'},
                                   config={'displayModeBar': True, 
                                           'displaylogo':False,
                                           'toImageButtonOptions': {'format': 'svg','filename': 'runout_calculator'},
                                           'modeBarButtonsToRemove':['hoverClosestPie']})])
 
-markdowncard = html.Div(dcc.Markdown("Enter slope and failure co-ordinates from bottom to top (1 decimal place) as tab delimited strings (recommend copy and pasting out of excel). Start and finish points of failure surface must co-incide with points on the slope profile (app will snap to nearest node)."), style = {'font-size':12,'font-family':'Verdana','textAlign':'center'})
+markdowncard = html.Div(dcc.Markdown('''
+                                     Disclaimer: This is a cut-fill calculator and does not predict failure mechanisms or run-out distances. Only applicable to slumping events where there is no rotational movement of the falling material. This tool does not replace assessment by a Geotechnical Engineer.
+                                     
+                                     For manual geometry mode, enter slope and failure co-ordinates from bottom to top (1 decimal place) as tab delimited strings (recommend copy and pasting out of excel). Start and finish points of failure surface must co-incide with points on the slope profile (app will snap to nearest node).
+                                     
+                                     Contact: jiwoo.ahn@bhp.com
+                                     '''), style = {'font-size':12,'font-family':'Verdana','textAlign':'center'})
 
 app.layout = dbc.Container(
     [
