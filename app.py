@@ -77,10 +77,14 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
             
             crest_x = (slopeheight-c)/m
             bkp_x = adj+backscarpdist
-            bkp_y = m*bkp_x + c
+            bkp_y1 = m*bkp_x + c
+            bkp_y2 = math.tan(math.radians(slopeangle))*bkp_x
             
             if bkp == 'yes' and bkp_x < crest_x:
-                sp_x, sp_y = [0, dl_x, adj, bkp_x, adj+crestwidth], [0, failureheight, slopeheight, slopeheight, slopeheight]
+                if backscarpdist >= 0:
+                    sp_x, sp_y = [0, dl_x, adj, bkp_x, adj+crestwidth], [0, failureheight, slopeheight, slopeheight, slopeheight]
+                else:
+                    sp_x, sp_y = [0, dl_x, bkp_x, adj, adj+crestwidth], [0, failureheight, bkp_y2, slopeheight, slopeheight]
             else:
                 sp_x, sp_y = [0, dl_x, adj, crest_x, adj+crestwidth], [0, failureheight, slopeheight, slopeheight, slopeheight]
             
@@ -123,7 +127,10 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
             fs_x, fs_y = textarea_to_list(fsxy)
         else:
             if bkp == 'yes' and bkp_x < crest_x:
-                fs_x, fs_y = [dl_x, bkp_x, bkp_x], [failureheight, bkp_y, slopeheight]
+                if backscarpdist >= 0:
+                    fs_x, fs_y = [dl_x, bkp_x, bkp_x], [failureheight, bkp_y1, slopeheight]
+                else:
+                    fs_x, fs_y = [dl_x, bkp_x, bkp_x], [failureheight, bkp_y1, bkp_y2]
             else:
                 fs_x, fs_y = [dl_x, crest_x], [failureheight, slopeheight]
             
@@ -322,7 +329,7 @@ backscarp = dbc.Checklist(
     inline=True
 )
 
-backscarpdist = dcc.Input(id='backscarpdist-state', type='number', value=5, min=1, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
+backscarpdist = dcc.Input(id='backscarpdist-state', type='number', value=5, min=-100, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
 # Header
 header = dbc.Navbar(
