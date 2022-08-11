@@ -14,7 +14,6 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output , State
 import dash_bootstrap_components as dbc
-import dash_auth
 
 from shapely.ops import split, linemerge
 from shapely.geometry import LineString, Polygon, Point
@@ -23,6 +22,11 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.renderers.default='browser'
 
+import flask
+from users import users_info
+user_pwd, user_names = users_info()
+_app_route = '/'
+    
 # Colors
 bmao = '#f7923a'
 bmar = '#ee3b34'
@@ -258,16 +262,36 @@ def plot_runout(standoff, swell_factor, bund_height, runout_angle, spxy, fsxy, d
 # Initiate the app
 external_stylesheets = [dbc.themes.SANDSTONE]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-VALID_USERNAME_PASSWORD_PAIRS = {
-    'BMA': '25'
-}
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
 
 server = app.server
 app.title = 'Runout Calculator'
+
+# Create a login route
+@app.server.route('/login', methods=['POST'])
+def route_login():
+    data = flask.request.form
+    username = data.get('username')
+    password = data.get('password')
+
+    if username not in user_pwd.keys() or  user_pwd[username] != password:
+        return flask.redirect('/login')
+    else:
+
+        # Return a redirect with
+        rep = flask.redirect(_app_route)
+
+        # Here we just store the given username in a cookie.
+        # Actual session cookies should be signed or use a JWT token.
+        rep.set_cookie('custom-auth-session', username)
+        return rep
+    
+# create a logout route
+@app.server.route('/logout', methods=['POST'])
+def route_logout():
+    # Redirect back to the index and remove the session cookie.
+    rep = flask.redirect('/login')
+    rep.set_cookie('custom-auth-session', '', expires=0)
+    return rep
 
 # App HTML layout
 styledict = {'display':'inline-block','vertical-align':'left', 'margin-top':'10px','margin-left':'20px','font-size':10,'font-family':'Verdana','textAlign':'center'}
@@ -282,7 +306,7 @@ swellfactor = dcc.Input(id='swellfactor-state', type='number', value=1.3, min=0.
 
 bundheight = dcc.Input(id='bundheight-state', type='number', value=2, min=0, max=5, step=0.1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
-runoutangle = dcc.Input(id='runoutangle-state', type='number', value=37, min=1, max=89, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'left', 'textAlign':'center',})
+runoutangle = dcc.Input(id='runoutangle-state', type='number', value=37, min=1, max=89, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'left', 'textAlign':'center'})
 
 directions = ['left', 'right']
 direction = dbc.RadioItems(
@@ -340,6 +364,25 @@ backscarp = dbc.Checklist(
 
 backscarpdist = dcc.Input(id='backscarpdist-state', type='number', value=5, min=-100, max=100, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
+# Simple dash component login form.
+login_form = html.Div(
+    [
+        html.Form(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(dcc.Input(placeholder="username", name="username", type="text",style={'height' : '35px', 'width': '100px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})),
+                        dbc.Col(dcc.Input(placeholder="password", name="password",type="password",style={'height' : '35px', 'width': '100px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})),
+                        dbc.Col(dbc.Button("Login", type="submit", color="success"))
+                    ]
+                    )
+            ],
+            action="/login",
+            method="post",
+        )
+    ]
+)
+
 # Header
 header = dbc.Navbar(
     dbc.Container(
@@ -368,9 +411,20 @@ header = dbc.Navbar(
                                 id="app-title"
                             )
                         ],
-                        md=True,
+                        md='auto',
                         align="center",
                     ),
+                    dbc.Col(
+                        [
+                            html.Div(id='custom-auth-frame-1',
+                                       style={
+                                              'textAlign': 'center',
+                                       }
+                                       ),
+                        ],
+                        md='auto',
+                        align='right'
+                    )
                 ],
                 align="center",
             ),
@@ -427,7 +481,8 @@ inputscard = dbc.Card(color='light',children=[
                               ])
                           ])
                       ])
-                  
+        
+        
 runoutgraph = dbc.Card(color='light',children=[dbc.CardHeader("Output", style={'font-weight':'bold'}),
                         dcc.Graph('dashboard',style={'height': '65vh'},
                                   config={'displayModeBar': True, 
@@ -456,7 +511,7 @@ app.layout = dbc.Container(
         
         html.Hr(),
         
-        markdowncard
+        html.Div(id='markdown-frame')
     ],
     fluid=True
 )
@@ -464,6 +519,8 @@ app.layout = dbc.Container(
 
 @app.callback(
     Output('dashboard', 'figure'),
+    Output('custom-auth-frame-1', 'children'),
+    Output('markdown-frame','children'),
     Input('update_button', 'n_clicks'),
     State('standoff-state', 'value'),
     State('swellfactor-state', 'value'),
@@ -483,17 +540,52 @@ app.layout = dbc.Container(
     State('backscarpdist-state','value')
 )
 
-def update_graph(n_clicks, standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, project, manual, slopeheight, slopeangle, crestwidth, failureheight, failureangle, backscarp, backscarpdist):
-    if n_clicks >= 0:
-        if project: prj = 'yes'
-        else: prj= 'no'
-        
-        if backscarp: bkp = 'yes'
-        else: bkp = 'no'
 
-        fig = plot_runout(standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, prj, manual, slopeheight, slopeangle, crestwidth, failureheight, failureangle, bkp, backscarpdist)
+def update_graph(n_clicks, standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, project, manual, slopeheight, slopeangle, crestwidth, failureheight, failureangle, backscarp, backscarpdist):
+    
+    session_cookie = flask.request.cookies.get('custom-auth-session')
+    
+    if not session_cookie:
+        # If there's no cookie we need to login.
+        # Initiate plotly figure
+        fig = go.Figure()
+        fig.update_layout(template='simple_white', paper_bgcolor=bkgr)
+        fig.update_layout(
+        title=dict(text='Please log in',x=0.5,y=0.95,
+                   font=dict(family="Arial",size=20,color='#000000')
+                   )
+        )
         
-    return fig
+        return [fig, login_form, '']
+    else:
+        
+        logout_output = html.Form(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Button("Logout", type="submit", color="danger"))
+                    ]
+                    )
+            ],
+            action="/logout",
+            method="post",
+        )                      
+        
+
+        
+        if n_clicks >= 0:
+            
+            print(n_clicks)
+            
+            if project: prj = 'yes'
+            else: prj= 'no'
+            
+            if backscarp: bkp = 'yes'
+            else: bkp = 'no'
+    
+            fig = plot_runout(standoff, swellfactor, bundheight, runoutangle, spxy, fsxy, direction, prj, manual, slopeheight, slopeangle, crestwidth, failureheight, failureangle, bkp, backscarpdist)
+                            
+        return [fig, logout_output, markdowncard]
 
 if __name__ == '__main__':
     app.run_server()
