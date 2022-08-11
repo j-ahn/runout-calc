@@ -316,7 +316,7 @@ failureangle = dcc.Input(id='failureangle-state', type='number', value=35, min=1
 # Slope Generator 
 backscarp = dbc.Checklist(
     id="backscarp-state",
-    options=[{"label": "Backscarp", "value": "no"}],
+    options=[{"label": "Tension Crack", "value": "no"}],
     value=["no"],
     switch=True,
     inline=True
@@ -403,8 +403,8 @@ inputscard = dbc.Card(color='light',children=[
                                                   html.Div([html.Label(["Daylighting height (m):",failureheight])], style=htmlright),
                                                   html.Div([html.Label(["Basal structure angle (°):",failureangle])], style=htmlright),
                                                   html.Hr(),
-                                                  html.Div([html.Label([backscarp])], style=htmlcent),
-                                                  html.Div([html.Label(["Backscarp distance (m):",backscarpdist])], style=htmlright)
+                                                  html.Div([html.Label([backscarp])], style=htmlright),
+                                                  html.Div([html.Label(["Crack distance (m):",backscarpdist])], style=htmlright)
                                                   ])
                                       ])
                                   ])
