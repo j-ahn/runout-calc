@@ -300,11 +300,11 @@ htmlcent = {'text-align':'center'}
 htmlright = {'text-align':'right'}
 
 # Dropdown and input fields, saved as variables
-standoff = dcc.Input(id='standoff-state', type='number', value=18, min=0, max=50, step=1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
+standoff = dcc.Input(id='standoff-state', type='number', value=18, min=0, max=50, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
-swellfactor = dcc.Input(id='swellfactor-state', type='number', value=1.3, min=0.8, max=2, step=0.05, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'left', 'textAlign' : 'center'})
+swellfactor = dcc.Input(id='swellfactor-state', type='number', value=1.3, min=0.8, max=2, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'left', 'textAlign' : 'center'})
 
-bundheight = dcc.Input(id='bundheight-state', type='number', value=2, min=0, max=5, step=0.1, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
+bundheight = dcc.Input(id='bundheight-state', type='number', value=2, min=0, max=5, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'middle'})
 
 runoutangle = dcc.Input(id='runoutangle-state', type='number', value=37, min=1, max=89, style={'height' : '20px', 'width': '50px', 'display':'inline-block', 'margin-left':'5px','vertical-align':'left', 'textAlign':'center'})
 
